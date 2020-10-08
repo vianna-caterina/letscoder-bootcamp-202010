@@ -25,6 +25,24 @@ function announceWinner() {
   }
 }
 
+
+
+var children = document.body.children
+var div = document.querySelectorAll("div");
+
+printSemanticElements(children)
+
+function printSemanticElements(elements) {
+  for (var i = 0; i < elements.length; i++) {
+    var element = elements[i]
+    // TODO do not print tags DIV, SPAN, SCRIPT, NOSCRIPT, STYLE, IFRAME
+    if ()
+      console.log(element.tagName)
+      console.log(div)
+
+    printSemanticElements(element.children)
+  }
+}
 /* buttons.onclick = function () {
   var empty = "";
   if (
