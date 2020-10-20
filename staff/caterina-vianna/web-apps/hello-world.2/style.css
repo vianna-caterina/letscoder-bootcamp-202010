@@ -1,0 +1,22 @@
+@import url("https://fonts.googleapis.com/css2?family=Krona+One&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Krona+One&display=swap");
+.off {
+  display: none;
+}
+
+section {
+  background-color: skyblue;
+}
+
+.title {
+  font-family: "Roboto", sans-serif;
+}
+
+.home {
+  border: 1px solid #ab73bd;
+  padding: 1rem;
+  border-radius: 1rem;
+  text-align: center;
+}
+
+/*# sourceMappingURL=style.css.map */

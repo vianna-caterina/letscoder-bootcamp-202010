@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hello World App</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+
+  <body>
+    <h1>Hello World App</h1>
+
+    <section><button>Register</button> or <button>Login</button></section>
+
+    <section class="off">
+      <h2>Register</h2>
+
+      <form class="form">
+        <input
+          class="form__input--text"
+          type="text"
+          name="fullname"
+          placeholder="full name"
+          _required
+        />
+        <input
+          class="form__input--email"
+          type="email"
+          name="email"
+          placeholder="e-mail"
+          required
+        />
+        <input
+          class="form__input--password"
+          type="password"
+          name="password"
+          placeholder="password"
+          required
+        />
+        <input
+          class="form__input--repassword"
+          type="password"
+          name="repassword"
+          placeholder="repeat password"
+          required
+        />
+        <button class="button button__register">Register</button>
+      </form>
+    </section>
+
+    <section class="off">
+      <p>
+        User registered successfully, proceed to
+        <button class="button button__login">Login</button>.
+      </p>
+    </section>
+
+    <section class="off">
+      <h2>Login</h2>
+
+      <form class="form">
+        <input
+          class="form__input--email"
+          type="email"
+          name="email"
+          placeholder="e-mail"
+          required
+        />
+        <input
+          class="form__input--email"
+          type="password"
+          name="password"
+          placeholder="password"
+          required
+        />
+        <button class="button button_login">Login</button>
+      </form>
+    </section>
+
+    <section class="off">
+      <h2>Welcome to Hello World App!</h2>
+    </section>
+
+    <script src="./main.js"></script>
+  </body>
+</html>

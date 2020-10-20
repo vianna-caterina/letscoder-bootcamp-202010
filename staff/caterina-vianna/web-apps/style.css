@@ -1,0 +1,39 @@
+.off {
+  display: none;
+}
+
+body {
+  background-image: linear-gradient(
+    to top,
+    #fdcbf1 0%,
+    #fdcbf1 1%,
+    #e6dee9 100%
+  );
+  font-family: Helvetica, Arial, sans-serif;
+  align-items: center;
+  background-size: 1500px 2000px;
+}
+
+.button {
+  color: #885df1;
+  padding: 10px 15px 10px 15px;
+  border: 1px solid #885df1;
+  border-radius: 40px 40px;
+  box-shadow: 3px 2px 2px rgba(0, 0, 0, 0.1);
+  transition: all 150ms ease-in-out;
+}
+
+.button:hover {
+  padding: 10px 15px 10px 15px;
+  background: #885df1;
+  color: white;
+  cursor: pointer;
+}
+
+.form__input {
+  padding: 10px 15px 10px 15px;
+  border: 1px solid #885df1;
+  border-radius: 40px 40px;
+}
+
+/*# sourceMappingURL=style.css.map */
