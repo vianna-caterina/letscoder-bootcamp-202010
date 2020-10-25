@@ -1,0 +1,56 @@
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans&family=Roboto:wght@700&display=swap");
+
+* {
+  font-family: "Open Sans", sans-serif;
+  text-align: center;
+  background-image: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+  background-size: 3000px 3000px;
+}
+
+button {
+  border-style: none;
+}
+button:focus {
+  outline: 0;
+}
+.access {
+  padding: 1rem;
+  border-radius: 1rem;
+  text-align: center;
+}
+
+.access__register {
+  border: 1px solid #1b59d6;
+  border-radius: 40px;
+  background: #f5f8ff;
+  color: #1b59d6;
+  padding: 10px 15px;
+  font-size: 15px;
+  font-weight: 100;
+}
+.access__login {
+  color: #f5f8ff;
+  background: #1b59d6;
+  padding: 10px 15px;
+  border-radius: 40px;
+  border: 1px solid #1b59d6;
+  transition: all 150ms ease-in-out;
+  font-size: 15px;
+  font-weight: 100;
+}
+.access__login:hover {
+  border: 1px solid #1b59d6;
+  border-radius: 40px;
+  background: #f5f8ff;
+  color: #1b59d6;
+  padding: 10px 15px;
+  font-size: 15px;
+  font-weight: 100;
+}
+
+.title {
+  font-family: "Roboto", sans-serif;
+  font-size: 100px;
+}
+
+/*# sourceMappingURL=index.css.map */
