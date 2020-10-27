@@ -7,7 +7,7 @@
     root.lastChild.replaceWith(access);
   });
 
-  root.append(title); // para concatenar
+  root.append(title);
 
   // access
   var access = mountAccess(
@@ -22,7 +22,7 @@
   root.append(access);
 
   // register
-  var register = mountRegister(register, function (
+  var register = mountRegister(function (
     fullname,
     email,
     password,
@@ -30,33 +30,31 @@
   ) {
     registerUser(fullname, email, password, repassword, function (error) {
       if (error) alert(error.message);
-      else {
-        register.classList.add("off");
-
-        confirm.classList.remove("off");
-      }
+      else register.replaceWith(confirm);
     });
   });
 
   // register confirm
   var confirm = mountRegisterConfirm(function () {
-    confirm.classList.add("off");
-
-    login.classList.remove("off");
+    confirm.replaceWith(login);
   });
 
   // login
   var login = mountLogin(function (email, password) {
     authenticateUser(email, password, function (error, token) {
-      if (error) alert(error.message);
-      else {
-        login.classList.add("off");
-
-        welcome.classList.remove("off");
+      if (error) {
+        alert(error.message);
+      } else {
+        retrieveUser(token, function (err, respUser) {
+          if (!error) {
+            var username = respUser.fullname;
+            var welcomeHtml = mountWelcome(username);
+            login.replaceWith(welcomeHtml);
+          } else {
+            alert(err.message);
+          }
+        });
       }
     });
   });
-
-  // welcome
-  var welcome = mountWelcome();
 })();
