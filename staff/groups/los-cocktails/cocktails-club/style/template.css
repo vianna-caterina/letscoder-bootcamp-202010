@@ -1,0 +1,19 @@
+* {
+  border: 1px solid black;
+}
+
+body {
+  margin: 0 auto;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.access {
+  padding: 5vw;
+  margin: 5vw;
+  width: 45vw;
+}
+
+/*# sourceMappingURL=template.css.map */
