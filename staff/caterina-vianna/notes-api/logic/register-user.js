@@ -1,64 +1,69 @@
-const fs = require('fs')
-const { validateEmail, validatePassword, validateCallback, validateFullname } = require('./helpers/validations')
-const { createId } = require('../utils/ids')
-const path = require('path')
-const semaphore = require('./helpers/semaphore')
+const fs = require("fs");
+const {
+  validateEmail,
+  validatePassword,
+  validateCallback,
+  validateFullname,
+} = require("./helpers/validations");
+const { createId } = require("../utils/ids");
+const path = require("path");
+const semaphore = require("./helpers/semaphore");
 
 module.exports = (fullname, email, password, callback) => {
-    validateFullname(fullname)
-    validateEmail(email)
-    validatePassword(password)
-    validateCallback(callback)
+  validateFullname(fullname);
+  validateEmail(email);
+  validatePassword(password);
+  validateCallback(callback);
 
-    const usersPath = path.join(__dirname, '../data/users')
+  const usersPath = path.join(__dirname, "../data/users");
 
-    semaphore(done => {
-        fs.readdir(usersPath, (error, files) => {
+  semaphore((done) => {
+    fs.readdir(usersPath, (error, files) => {
+      if (error) {
+        done();
+
+        return callback(error);
+      }
+
+      (function check(files, index = 0) {
+        if (index < files.length) {
+          const file = files[index];
+
+          fs.readFile(path.join(usersPath, file), "utf8", (error, json) => {
             if (error) {
-                done()
+              done();
 
-                return callback(error)
-            };
+              return callback(error);
+            }
 
-            (function check(files, index = 0) {
-                if (index < files.length) {
-                    const file = files[index]
+            const { email: _email } = JSON.parse(json);
 
-                    fs.readFile(path.join(usersPath, file), 'utf8', (error, json) => {
-                        if (error) {
-                            done()
+            if (email === _email) {
+              done();
 
-                            return callback(error)
-                        }
+              callback(new Error(`e-mail ${email} already registered`));
+            } else check(files, ++index);
+          });
+        } else {
+          const id = createId();
 
-                        const { email: _email } = JSON.parse(json)
+          const user = { id, fullname, email, password };
 
-                        if (email === _email) {
-                            done()
+          const json = JSON.stringify(user);
 
-                            callback(new Error(`e-mail ${email} already registered`))
-                        } else check(files, ++index)
-                    })
-                } else {
-                    const id = createId()
+          fs.writeFile(path.join(usersPath, `${id}.json`), json, (error) => {
+            if (error) {
+              done();
 
-                    const user = { id, fullname, email, password }
+              return callback(error);
+            }
 
-                    const json = JSON.stringify(user)
+            done();
 
-                    fs.writeFile(path.join(usersPath, `${id}.json`), json, error => {
-                        if (error) {
-                            done()
-
-                            return callback(error)
-                        }
-
-                        done()
-
-                        callback(null)
-                    })
-                }
-            })(files)
-        })
-    })
-}
+            callback(null);
+          });
+        }
+      })(files);
+    });
+  });
+};

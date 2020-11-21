@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import Note from "./Note";
-import { retrieveUser } from "../logic";
-import saveNote from "../logic/save-note";
+import { retrieveUser, saveNote, retrieveNotes } from "../logic";
+import SaveNote from "./SaveNote";
+import ListNotes from "./ListNotes";
 
 export default function () {
-  const [name, setName, setView] = useState("note");
+  const [name, setName] = useState();
+  const [notes, setNotes] = useState();
 
   useEffect(() => {
     const { token } = sessionStorage;
@@ -16,16 +17,38 @@ export default function () {
         const { fullname } = user;
 
         setName(fullname);
+
+        try {
+          retrieveNotes(token, (error, notes) => {
+            if (error) return alert(error.message);
+
+            setNotes(notes);
+          });
+        } catch (error) {
+          alert(error.message);
+        }
       });
     } catch (error) {
       alert(error.message);
     }
   }, []);
 
-  const handlePublishNote = (text, tags, owner, visibility) => {
+  const handleSaveNote = (text, visibility, tags) => {
+    const { token } = sessionStorage;
+
     try {
-      saveNote(text, tags, owner, visibility, (error) => {
+      saveNote(token, undefined, text, tags, visibility, (error) => {
         if (error) return alert(error.message);
+
+        try {
+          retrieveNotes(token, (error, notes) => {
+            if (error) return alert(error.message);
+
+            setNotes(notes);
+          });
+        } catch (error) {
+          alert(error.message);
+        }
       });
     } catch (error) {
       alert(error.message);
@@ -35,8 +58,8 @@ export default function () {
   return (
     <section className="home">
       <h1>Hello, {name}!</h1>
-
-      <Note onSaveNote={handlePublishNote} />
+      <SaveNote onSaveNote={handleSaveNote} />
+      <ListNotes notes={notes} />
     </section>
   );
 }

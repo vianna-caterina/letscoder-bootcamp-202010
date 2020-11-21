@@ -10,12 +10,15 @@ const {
   handleRegisterUser,
   handleAuthenticateUser,
   handleRetrieveUser,
+  handleSaveNote,
+  handleRetrieveNotes,
 } = require("./handlers");
-const handleSaveNote = require("./handlers/handle-save-note");
 
 const withErrorHandling = require("./helpers/with-error-handling");
 
 const router = new Router();
+
+// router.use(jsonBodyParser)
 
 router.post(
   "/api/accept-cookies",
@@ -39,5 +42,7 @@ router.post(
 router.get("/api/users", withErrorHandling(handleRetrieveUser));
 
 router.post("/api/notes", jsonBodyParser, withErrorHandling(handleSaveNote));
+
+router.get("/api/notes", withErrorHandling(handleRetrieveNotes));
 
 module.exports = router;

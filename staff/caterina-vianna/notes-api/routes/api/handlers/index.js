@@ -3,5 +3,6 @@ module.exports = {
   handleRegisterUser: require("./handle-register-user"),
   handleAuthenticateUser: require("./handle-authenticate-user"),
   handleRetrieveUser: require("./handle-retrieve-user"),
-  handleSaveNotes: require("./handle-save-note"),
+  handleSaveNote: require("./handle-save-note"),
+  handleRetrieveNotes: require("./handle-retrieve-notes"),
 };

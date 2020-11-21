@@ -1,5 +1,3 @@
-import "./SignIn.sass";
-
 function SignIn({ onSignIn }) {
   return (
     <section className="sign-in">
