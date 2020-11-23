@@ -2,7 +2,7 @@ require("dotenv").config();
 
 const { MongoClient } = require("mongodb");
 const context = require("./context");
-const retrieveUser = require("./retrieve-user");
+const searchUsersFullname = require("./search-users-email");
 
 const {
   env: { MONGODB_URL },
@@ -15,5 +15,5 @@ client.connect((error, connection) => {
 
   context.connection = connection;
 
-  retrieveUser("5fb7f43bcf65c468175af431", console.log);
+  searchUsersFullname("m", console.log);
 });

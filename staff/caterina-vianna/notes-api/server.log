@@ -100,3 +100,19 @@ info 2020-11-21T10:02:39.957Z - server running on port 4000
 info 2020-11-21T10:08:45.526Z - stopping server
 info 2020-11-21T10:08:52.289Z - server running on port 4000
 info 2020-11-21T10:20:01.246Z - stopping server
+info 2020-11-21T11:28:13.762Z - starting server
+info 2020-11-21T11:32:12.528Z - starting server
+info 2020-11-21T11:34:03.178Z - starting server
+info 2020-11-21T11:34:03.211Z - server running on port 4000
+info 2020-11-23T11:01:33.638Z - starting server
+error 2020-11-23T11:02:03.649Z - MongoServerSelectionError: connect ECONNREFUSED 127.0.0.1:27017
+info 2020-11-23T11:02:03.650Z - stopping server
+info 2020-11-23T11:08:19.777Z - starting server
+info 2020-11-23T11:08:19.810Z - server running on port 4000
+info 2020-11-23T11:10:04.980Z - stopping server
+info 2020-11-23T11:10:08.687Z - starting server
+info 2020-11-23T11:10:08.722Z - server running on port 4000
+info 2020-11-23T12:05:22.214Z - stopping server
+info 2020-11-23T12:10:58.606Z - starting server
+info 2020-11-23T12:10:58.640Z - server running on port 4000
+info 2020-11-23T12:11:06.926Z - stopping server

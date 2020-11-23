@@ -1,69 +1,63 @@
-const fs = require("fs");
 const {
   validateEmail,
   validatePassword,
   validateCallback,
   validateFullname,
 } = require("./helpers/validations");
-const { createId } = require("../utils/ids");
-const path = require("path");
 const semaphore = require("./helpers/semaphore");
+const context = require("./context");
 
-module.exports = (fullname, email, password, callback) => {
+const {
+  env: { DB_NAME },
+} = process;
+
+module.exports = function (fullname, email, password, callback) {
   validateFullname(fullname);
   validateEmail(email);
   validatePassword(password);
   validateCallback(callback);
 
-  const usersPath = path.join(__dirname, "../data/users");
+  const { connection } = this;
+  // this es context con el bind
+  //es lo mismo que const { connection } = context
+
+  const db = connection.db(DB_NAME);
+  //crea una constante que es la base de datos
+
+  const users = db.collection("users");
+  //trae la colleccion de usuarios que esta dentro de la base de datos
+  //users.insertOnse -- crea un nuevo usuario
 
   semaphore((done) => {
-    fs.readdir(usersPath, (error, files) => {
+    users.findOne({ email }, (error, user) => {
+      //dindOne busca parametros del usuario. Va de uno el uno.Busca para metros con los cuales tiene que encotnrar el usuaio.
       if (error) {
         done();
 
         return callback(error);
       }
 
-      (function check(files, index = 0) {
-        if (index < files.length) {
-          const file = files[index];
+      if (user) {
+        done();
+        // si hay usuario significa que ya existe entonces salta el error
+        return callback(new Error(`e-mail ${email} already registered`));
+      }
 
-          fs.readFile(path.join(usersPath, file), "utf8", (error, json) => {
-            if (error) {
-              done();
+      user = { fullname, email, password };
+      //crea un usuario con estas propiedades. No hacemos const user pq viene como parametro.
 
-              return callback(error);
-            }
+      //si no hay error y no hay usuario se crea un nuevo usuario con insetOne.
+      users.insertOne(user, (error, result) => {
+        if (error) {
+          done();
 
-            const { email: _email } = JSON.parse(json);
-
-            if (email === _email) {
-              done();
-
-              callback(new Error(`e-mail ${email} already registered`));
-            } else check(files, ++index);
-          });
-        } else {
-          const id = createId();
-
-          const user = { id, fullname, email, password };
-
-          const json = JSON.stringify(user);
-
-          fs.writeFile(path.join(usersPath, `${id}.json`), json, (error) => {
-            if (error) {
-              done();
-
-              return callback(error);
-            }
-
-            done();
-
-            callback(null);
-          });
+          return callback(error);
         }
-      })(files);
+
+        done();
+
+        callback(null);
+      });
     });
   });
-};
+}.bind(context);
