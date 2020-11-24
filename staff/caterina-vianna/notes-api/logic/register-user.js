@@ -26,11 +26,11 @@ module.exports = function (fullname, email, password, callback) {
 
   const users = db.collection("users");
   //trae la colleccion de usuarios que esta dentro de la base de datos
-  //users.insertOnse -- crea un nuevo usuario
+  //users.insertOne -- crea un nuevo usuario
 
   semaphore((done) => {
     users.findOne({ email }, (error, user) => {
-      //dindOne busca parametros del usuario. Va de uno el uno.Busca para metros con los cuales tiene que encotnrar el usuaio.
+      //findOne busca parametros del usuario. Va de uno el uno.Busca para metros con los cuales tiene que encotnrar el usuaio.
       if (error) {
         done();
 

@@ -30,6 +30,15 @@ module.exports = function (ownerId, noteId, text, tags, visibility, callback) {
   const users = db.collection("users");
   const notes = db.collection("notes");
 
+  const _id = ObjectiId(ownerId);
+
+  users.findOne({ _id }),
+    (error, user) => {
+      if (error) return callback(error);
+      if (!user)
+        return callback(new Error(`user with id ${ownerId} not found`));
+    };
+
   user = { ownerId, noteId, text, tags, visibility };
   users.insertOne(user, (error, result) => {
     if (error) {
