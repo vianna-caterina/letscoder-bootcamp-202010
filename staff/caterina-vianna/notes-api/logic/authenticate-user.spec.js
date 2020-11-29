@@ -18,26 +18,22 @@ const {
 describe("authenticateUser()", () => {
   let client, db, users;
 
-  before((done) => {
+  before(() => {
     client = new MongoClient(MONGODB_URL, { useUnifiedTopology: true });
 
-    client.connect((error, connection) => {
-      if (error) return done(error);
-
+    return client.connect().then((connection) => {
       context.connection = connection;
 
       db = connection.db(DB_NAME);
 
       users = db.collection("users");
-
-      done();
     });
   });
 
   describe("when user already exists", () => {
     let userId, fullname, email, password;
 
-    beforeEach((done) => {
+    beforeEach(() => {
       fullname = `${randomStringWithPrefix("name")} ${randomStringWithPrefix(
         "surname"
       )}`;
@@ -46,56 +42,36 @@ describe("authenticateUser()", () => {
 
       const user = { fullname, email, password };
 
-      users.insertOne(user, (error, result) => {
-        if (error) return done(error);
-
-        userId = result.insertedId.toString();
-
-        done();
-      });
+      return users
+        .insertOne(user)
+        .then((result) => (userId = result.insertedId.toString()));
     });
 
-    it("should succeed on correct credentials", (done) => {
-      authenticateUser(email, password, (error, _userId) => {
-        expect(error).to.be.null;
-        expect(_userId).to.equal(userId);
-
-        done();
-      });
-    });
+    it("should succeed on correct credentials", () =>
+      authenticateUser(email, password).then((_userId) =>
+        expect(_userId).to.equal(userId)
+      ));
 
     describe("when wrong credentials", () => {
-      it("should fail on wrong e-mail", (done) => {
-        authenticateUser(`wrong${email}`, password, (error, userId) => {
+      it("should fail on wrong e-mail", () =>
+        authenticateUser(`wrong${email}`, password).catch((error) => {
           expect(error).to.be.instanceOf(Error);
+
           expect(error.message).to.equal("wrong credentials");
+        }));
 
-          expect(userId).to.be.undefined;
-
-          done();
-        });
-      });
-
-      it("should fail on wrong password", (done) => {
-        authenticateUser(email, `wrong${password}`, (error, userId) => {
+      it("should fail on wrong password", () =>
+        authenticateUser(email, `wrong${password}`).catch((error) => {
           expect(error).to.be.instanceOf(Error);
+
           expect(error.message).to.equal("wrong credentials");
-
-          expect(userId).to.be.undefined;
-
-          done();
-        });
-      });
+        }));
     });
 
-    afterEach((done) =>
-      users.deleteOne({ _id: ObjectId(userId) }, (error, result) => {
-        if (error) return done(error);
-
-        expect(result.deletedCount).to.equal(1);
-
-        done();
-      })
+    afterEach(() =>
+      users
+        .deleteOne({ _id: ObjectId(userId) })
+        .then((result) => expect(result.deletedCount).to.equal(1))
     );
   });
 
@@ -107,21 +83,17 @@ describe("authenticateUser()", () => {
       password = randomStringWithPrefix("password");
     });
 
-    it("should fail on valid credentials", (done) => {
-      authenticateUser(email, password, (error, userId) => {
+    it("should fail on valid credentials", () =>
+      authenticateUser(email, password).catch((error) => {
         expect(error).to.be.instanceOf(Error);
+
         expect(error.message).to.equal("wrong credentials");
-
-        expect(userId).to.be.undefined;
-
-        done();
-      });
-    });
+      }));
   });
 
   describe("when any parameter is wrong", () => {
     describe("when e-mail is wrong", () => {
-      describe("when e-mail is not a string", () => {
+      describe("when e-mails is not a string", () => {
         let email, password;
 
         beforeEach(() => {
@@ -129,7 +101,7 @@ describe("authenticateUser()", () => {
           password = randomStringWithPrefix("password");
         });
 
-        it("should fail when email is not an string", () => {
+        it("should fail on empty or blank email", () => {
           expect(() => authenticateUser(email, password, () => {})).to.throw(
             TypeError,
             `${email} is not an e-mail`
@@ -145,7 +117,7 @@ describe("authenticateUser()", () => {
           password = randomStringWithPrefix("password");
         });
 
-        it("should fail on an empty or blank email", () => {
+        it("should fail on non-string email", () => {
           expect(() => authenticateUser(email, password, () => {})).to.throw(
             Error,
             "e-mail is empty or blank"
@@ -153,47 +125,10 @@ describe("authenticateUser()", () => {
         });
       });
     });
-    describe("when password is wrong", () => {
-      describe("when password is empty or blank", () => {
-        let email, password;
 
-        beforeEach(() => {
-          email = randomWithPrefixAndSuffix("email", "@mail.com");
-          password = randomEmptyOrBlankString();
-        });
-
-        it("should fail on an empty or blank password", () => {
-          expect(() => authenticateUser(email, password, () => {})).to.throw(
-            Error,
-            "password is empty or blank"
-          );
-        });
-      });
-
-      describe("when password is not a string", () => {
-        let email, password;
-
-        beforeEach(() => {
-          email = randomWithPrefixAndSuffix("email", "@mail.com");
-          password = randomNonString();
-        });
-
-        it("should fail when password is not an string", () => {
-          expect(() => authenticateUser(email, password, () => {})).to.throw(
-            TypeError,
-            `${password} is not a password`
-          );
-        });
-      });
-    });
-
+    // TODO when password is wrong and its subcases
     // TODO when callback is wrong
   });
-  after((done) =>
-    client.close((error) => {
-      if (error) return done(error);
 
-      done();
-    })
-  );
+  after(() => client.close());
 });

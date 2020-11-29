@@ -5,63 +5,30 @@ const {
   validateVisibility,
   validateCallback,
 } = require("./helpers/validations");
-const context = require("./context");
 const { ObjectId } = require("mongodb");
+const { ConflictError } = require("../errors");
+const { Notes } = require("../models");
 
-const {
-  env: { DB_NAME },
-} = process;
-
-module.exports = function (ownerId, noteId, text, tags, visibility, callback) {
+module.exports = function (ownerId, noteId, text, tags, visibility) {
   validateId(ownerId);
   if (typeof noteId !== "undefined") validateId(noteId);
   validateText(text);
   validateTags(tags);
   validateVisibility(visibility);
-  validateCallback(callback);
-
-  const { connection } = this;
-
-  const db = connection.db(DB_NAME);
-
-  const users = db.collection("users");
 
   const _id = ObjectId(ownerId);
 
-  users.findOne({ _id }, (error, user) => {
-    if (error) return callback(error);
-
-    if (!user) return callback(new Error(`user with id ${ownerId} not found`));
-
-    const notes = db.collection("notes");
+  return users.findOne({ _id }).then((user) => {
+    if (!user) throw new ConflictError(`user with id ${ownerId} not found`);
 
     if (noteId) {
       const _id = ObjectId(noteId);
 
-      notes.findOne({ _id }, (error, note) => {
-        if (error) return callback(error);
+      return notes.findOne({ _id }).then((note) => {
+        if (!note) throw new ConflictError(`note with id ${noteId} not found`);
 
-        if (!note)
-          return callback(new Error(`note with id ${noteId} not found`));
-
-        notes.updateOne(
-          { _id },
-          { $set: { text, tags, visibility } },
-          (error, result) => {
-            if (error) return callback(error);
-
-            callback(null);
-          }
-        );
+        return Notes.create({ text, tags, visibility, owner, date });
       });
-    } else
-      notes.insertOne(
-        { text, tags, visibility, owner: ObjectId(ownerId), date: new Date() },
-        (error, result) => {
-          if (error) return callback(error);
-
-          callback(null);
-        }
-      );
+    } else return Notes.create({ text, tags, visibility, owner, date });
   });
-}.bind(context);
+};

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { registerUser, authenticateUser } from "./logic";
 
 function App() {
-  const [view, setView] = useState("sign-up");
+  const [view, setView] = useState(sessionStorage.token ? "home" : "sign-in");
 
   const handleSignUp = (fullname, email, password) => {
     try {
@@ -36,7 +36,7 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Hello, Cate!</h1>
+        <h1>Hello!</h1>
 
         {view === "sign-up" && <SignUp onSignUp={handleSignUp} />}
         {view === "sign-in" && <SignIn onSignIn={handleSignIn} />}

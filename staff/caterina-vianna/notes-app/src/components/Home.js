@@ -1,8 +1,8 @@
+import "./Home.sass";
 import { useState, useEffect } from "react";
 import { retrieveUser, saveNote, retrieveNotes } from "../logic";
 import SaveNote from "./SaveNote";
 import ListNotes from "./ListNotes";
-import SearchUsers from "./Search-users";
 
 export default function () {
   const [name, setName] = useState();

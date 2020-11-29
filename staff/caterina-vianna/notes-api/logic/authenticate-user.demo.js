@@ -1,20 +1,18 @@
 require("dotenv").config();
-
-const { MongoClient } = require("mongodb");
-const context = require("./context");
 const authenticateUser = require("./authenticate-user");
+const { ConflictError } = require("../errors");
+const mongoose = require("mongoose");
 
-const {
-  env: { MONGODB_URL },
-} = process;
+mongoose
+  .connect(MONGODB_URL, {
+    useUnifiedTopology: true,
+    useNewUrlParser: true,
+  })
+  .then(() =>
+    authenticateUser("manuelbarzi@gmail.com", "123123123", console.log)
+  )
+  .catch(console.error)
+  .then(() => mongoose.disconnect())
+  .then(() => console.log("ended"));
 
-const client = new MongoClient(MONGODB_URL, { useUnifiedTopology: true });
-
-client.connect((error, connection) => {
-  if (error) return console.error(error);
-
-  context.connection = connection;
-
-  //authenticateUser('pepigri@mail.com', '123123123', console.log)
-  authenticateUser("manuelbarzi@gmail.com", "123123123", console.log);
-});
+//authenticateUser('pepigri@mail.com', '123123123', console.log)

@@ -1,226 +1,205 @@
-require('dotenv').config()
-const { expect } = require('chai')
-const { MongoClient, ObjectId } = require('mongodb')
-const { randomStringWithPrefix, randomWithPrefixAndSuffix, randomInteger } = require('../utils/randoms')
-require('../utils/array-polyfills')
-const context = require('./context')
-const saveNote = require('./save-note')
-const { env: { MONGODB_URL, DB_NAME } } = process
-describe('saveNote()', () => {
-    let client, db, users, notes
-    before(done => {
-        client = new MongoClient(MONGODB_URL, { useUnifiedTopology: true })
-        client.connect((error, connection) => {
-            if (error) return done(error)
-            context.connection = connection
-            db = connection.db(DB_NAME)
-            users = db.collection('users')
-            notes = db.collection('notes')
-            done()
-        })
-    })
-    describe('when user already exists', () => {
-        let fullname, email, password, ownerId
-        beforeEach(done => {
-            fullname = `${randomStringWithPrefix('name')} ${randomStringWithPrefix('surname')}`
-            email = randomWithPrefixAndSuffix('email', '@mail.com')
-            password = randomStringWithPrefix('password')
-            const user = { fullname, email, password }
-            users.insertOne(user, (error, result) => {
-                if (error) return done(error)
-                ownerId = result.insertedId.toString()
-                done()
-            })
-        })
-        describe('when user doesn\'t have notes', () => {
-            let text, tags, visibility
-            beforeEach(() => {
-                text = randomStringWithPrefix('text')
-                tags = new Array(randomInteger(10, 100))
-                
+require("dotenv").config();
 
-                for (let i = 0; i < tags.length; i++)
-                    tags[i] = randomStringWithPrefix('tag')
+const { expect } = require("chai");
+const { MongoClient, ObjectId } = require("mongodb");
+const {
+  randomStringWithPrefix,
+  randomWithPrefixAndSuffix,
+  randomInteger,
+} = require("../utils/randoms");
+require("../utils/array-polyfills");
+const context = require("./context");
+const saveNote = require("./save-note");
 
-@@ -80,54 +80,116 @@ describe('saveNote()', () => {
+const {
+  env: { MONGODB_URL, DB_NAME },
+} = process;
 
-                            expect(note.tags).to.deep.equal(tags)
-                            expect(note.visibility).to.equal(visibility)
-                            expect(note.date).to.be.instanceOf(Date)
+describe("saveNote()", () => {
+  let client, db, users, notes;
 
-                            done()
-                        })
-                    })
-                })
-            })
+  before(() => {
+    client = new MongoClient(MONGODB_URL, { useUnifiedTopology: true });
 
-            afterEach(done =>
-                notes.deleteMany({ owner: ObjectId(ownerId) }, (error, result) => {
-                    if (error) return done(error)
+    return client.connect().then((connection) => {
+      context.connection = connection;
 
-                    expect(result.deletedCount).to.equal(1)
+      db = connection.db(DB_NAME);
 
-                    done()
-                })
-            )
-        })
+      users = db.collection("users");
 
-        afterEach(done =>
-            users.deleteOne({ email, password }, (error, result) => {
-                if (error) return done(error)
-        describe('when user already has notes', () => {
-            let text, tags, visibility, noteId
+      notes = db.collection("notes");
+    });
+  });
 
-                expect(result.deletedCount).to.equal(1)
-            beforeEach(done => {
-                text = randomStringWithPrefix('text')
-                tags = new Array(randomInteger(10, 100))
+  describe("when user already exists", () => {
+    let fullname, email, password, ownerId;
 
-                notes.deleteMany({ owner: ObjectId(ownerId) }, (error, result) => {
-                for (let i = 0; i < tags.length; i++)
-                    tags[i] = randomStringWithPrefix('tag')
+    beforeEach(() => {
+      fullname = `${randomStringWithPrefix("name")} ${randomStringWithPrefix(
+        "surname"
+      )}`;
+      email = randomWithPrefixAndSuffix("email", "@mail.com");
+      password = randomStringWithPrefix("password");
 
-                visibility = ['public', 'private'].random()
+      const user = { fullname, email, password };
 
-                notes.insertOne({ text, tags, visibility, owner: ObjectId(ownerId), date: new Date }, (error, result) => {
-                    if (error) return done(error)
+      return users
+        .insertOne(user)
+        .then((result) => (ownerId = result.insertedId.toString()));
+    });
 
-                    expect(result.deletedCount).to.equal(1)
-                    noteId = result.insertedId.toString()
+    describe("when user doesn't have notes", () => {
+      let text, tags, visibility;
 
-                    done()
-                })
-            })
-        )
-    })
+      beforeEach(() => {
+        text = randomStringWithPrefix("text");
+        tags = new Array(randomInteger(10, 100));
 
-    describe('when user does not exist', () => {
-        let fullname, email, password
-            it('should succeed updating the note', done => {
-                text = randomStringWithPrefix('text')
-                tags = new Array(randomInteger(10, 100))
+        for (let i = 0; i < tags.length; i++)
+          tags[i] = randomStringWithPrefix("tag");
 
-        beforeEach(() => {
-            fullname = `${randomStringWithPrefix('name')} ${randomStringWithPrefix('surname')}`
-            email = randomWithPrefixAndSuffix('email', '@mail.com')
-            password = randomStringWithPrefix('password')
-                for (let i = 0; i < tags.length; i++)
-                    tags[i] = randomStringWithPrefix('tag')
+        visibility = ["public", "private"].random();
+      });
 
-                visibility = ['public', 'private'].random()
+      it("should succeed creating a new note", () =>
+        saveNote(ownerId, undefined, text, tags, visibility).then(() => {
+          const cursor = notes.find({ owner: ObjectId(ownerId) });
 
-                saveNote(ownerId, noteId, text, tags, visibility, error => {
-                    expect(error).to.be.null
+          return cursor.toArray().then((notes) => {
+            expect(notes).to.have.lengthOf(1);
 
-                    notes.find({ owner: ObjectId(ownerId) }, (error, cursor) => {
-                        if (error) return done(error)
+            const [note] = notes;
 
-                        cursor.toArray((error, notes) => {
-                            if (error) return done(error)
+            expect(note.text).to.equal(text);
 
-                            expect(notes).to.have.lengthOf(1)
+            expect(note.tags).to.deep.equal(tags);
+            expect(note.visibility).to.equal(visibility);
+            expect(note.date).to.be.instanceOf(Date);
+          });
+        }));
 
-                            const [note] = notes
+      afterEach(() =>
+        notes
+          .deleteMany({ owner: ObjectId(ownerId) })
+          .then((result) => expect(result.deletedCount).to.equal(1))
+      );
+    });
 
-                            expect(note.text).to.equal(text)
+    describe("when user already has notes", () => {
+      let text, tags, visibility, noteId;
 
-                            expect(note.tags).to.deep.equal(tags)
-                            expect(note.visibility).to.equal(visibility)
-                            expect(note.date).to.be.instanceOf(Date)
+      beforeEach(() => {
+        text = randomStringWithPrefix("text");
+        tags = new Array(randomInteger(10, 100));
 
-                            done()
-                        })
-                    })
-                })
-            })
+        for (let i = 0; i < tags.length; i++)
+          tags[i] = randomStringWithPrefix("tag");
 
-            afterEach(done =>
-                notes.deleteMany({ owner: ObjectId(ownerId) }, (error, result) => {
-                    if (error) return done(error)
+        visibility = ["public", "private"].random();
 
-                    expect(result.deletedCount).to.equal(1)
+        return notes
+          .insertOne({
+            text,
+            tags,
+            visibility,
+            owner: ObjectId(ownerId),
+            date: new Date(),
+          })
+          .then((result) => (noteId = result.insertedId.toString()));
+      });
 
-                    done()
-                })
-            )
-        })
+      it("should succeed updating the note", () => {
+        text = randomStringWithPrefix("text");
+        tags = new Array(randomInteger(10, 100));
 
-        // it('should succeed on new user', done => {
-        //     registerUser(fullname, email, password, error => {
-        //         expect(error).to.be.null
-        describe('when user note does not exist (it was removed from db)', () => {
-            let text, tags, visibility, noteId
+        for (let i = 0; i < tags.length; i++)
+          tags[i] = randomStringWithPrefix("tag");
 
-            beforeEach(() => {
-                noteId = '5fbcd46c1cc24f9c7ce22db0'
+        visibility = ["public", "private"].random();
 
-                text = randomStringWithPrefix('text')
-                tags = new Array(randomInteger(10, 100))
+        return saveNote(ownerId, noteId, text, tags, visibility).then(
+          (result) => {
+            expect(result).to.be.undefined;
 
-                for (let i = 0; i < tags.length; i++)
-                    tags[i] = randomStringWithPrefix('tag')
+            const cursor = notes.find({ owner: ObjectId(ownerId) });
 
-                visibility = ['public', 'private'].random()
-            })
+            return cursor.toArray().then((notes) => {
+              expect(notes).to.have.lengthOf(1);
 
-        //         users.findOne({ email, password }, (error, user) => {
-        //             expect(error).to.be.null
-            it('should fail on trying to update a note that does not exist any more', done => {
-                saveNote(ownerId, noteId, text, tags, visibility, error => {
-                    expect(error).to.be.instanceOf(Error)
+              const [note] = notes;
 
-        //             expect(user).to.exist
-        //             expect(user.fullname).to.equal(fullname)
-                    expect(error.message).to.equal(`note with id ${noteId} not found`)
+              expect(note.text).to.equal(text);
 
-        //             done()
-        //         })
-        //     })
-        // })
-                    done()
-                })
-            })
-        })
+              expect(note.tags).to.deep.equal(tags);
+              expect(note.visibility).to.equal(visibility);
+              expect(note.date).to.be.instanceOf(Date);
+            });
+          }
+        );
+      });
 
-        afterEach(done =>
-            users.deleteOne({ email, password }, (error, result) => {
-                if (error) return done(error)
-                expect(result.deletedCount).to.equal(1)
-                done()
-            })
-        )
-    })
+      afterEach(() =>
+        notes
+          .deleteMany({ owner: ObjectId(ownerId) })
+          .then((result) => expect(result.deletedCount).to.equal(1))
+      );
+    });
 
-    describe('when user does not exist', () => {
-        let text, tags, visibility, ownerId
+    describe("when user note does not exist (it was removed from db)", () => {
+      let text, tags, visibility, noteId;
 
-        beforeEach(() => {
-            ownerId = '5fbcd46c1cc24f9c7ce22db1'
+      beforeEach(() => {
+        noteId = "5fbcd46c1cc24f9c7ce22db0";
 
-            text = randomStringWithPrefix('text')
-            tags = new Array(randomInteger(10, 100))
+        text = randomStringWithPrefix("text");
+        tags = new Array(randomInteger(10, 100));
 
-            for (let i = 0; i < tags.length; i++)
-                tags[i] = randomStringWithPrefix('tag')
+        for (let i = 0; i < tags.length; i++)
+          tags[i] = randomStringWithPrefix("tag");
 
-            visibility = ['public', 'private'].random()
-        })
+        visibility = ["public", "private"].random();
+      });
 
-        it('should fail alerting user with id does not exist', done => {
-            saveNote(ownerId, undefined, text, tags, visibility, error => {
-                expect(error).to.be.instanceOf(Error)
+      it("should fail on trying to update a note that does not exist any more", () =>
+        saveNote(ownerId, noteId, text, tags, visibility).catch((error) => {
+          expect(error).to.be.instanceOf(Error);
 
-                expect(error.message).to.equal(`user with id ${ownerId} not found`)
+          expect(error.message).to.equal(`note with id ${noteId} not found`);
+        }));
+    });
 
-                done()
-            })
-        })
-    })
+    afterEach(() =>
+      users
+        .deleteOne({ email, password })
+        .then((result) => expect(result.deletedCount).to.equal(1))
+    );
+  });
 
-    // TODO more unit test cases
+  describe("when user does not exist", () => {
+    let text, tags, visibility, ownerId;
 
-    after(done => client.close(error => {
-        if (error) return done(error)
-        done()
-    }))
-})
+    beforeEach(() => {
+      ownerId = "5fbcd46c1cc24f9c7ce22db1";
+
+      text = randomStringWithPrefix("text");
+      tags = new Array(randomInteger(10, 100));
+
+      for (let i = 0; i < tags.length; i++)
+        tags[i] = randomStringWithPrefix("tag");
+
+      visibility = ["public", "private"].random();
+    });
+
+    it("should fail alerting user with id does not exist", () =>
+      saveNote(ownerId, undefined, text, tags, visibility).catch((error) => {
+        expect(error).to.be.instanceOf(Error);
+
+        expect(error.message).to.equal(`user with id ${ownerId} not found`);
+      }));
+  });
+
+  // TODO more unit test cases
+
+  after(() => client.close());
+});
